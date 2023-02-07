@@ -1,6 +1,7 @@
 int SER_Pin = 11;   //pin 14 on the 75HC595 data
 int RCLK_Pin = 10;  //pin 12 on the 75HC595 latch
-int SRCLK_Pin = 13; //pin 11 on the 75HC595 clock
+int SRCLK_Pin = 13; //pin 11 on the 75HC595 clock 
+int pushbutton = 0;
 
 //How many of the shift registers - change this
 #define number_of_74hc595s 8
@@ -19,6 +20,8 @@ int SRCLK_Pin = 13; //pin 11 on the 75HC595 clock
 #define numOfRegisterPins number_of_74hc595s * 8
 
 boolean registers[numOfRegisterPins];
+
+int animCount = 0;
 
 void setup(){
   pinMode(SER_Pin, OUTPUT);
@@ -39,6 +42,7 @@ void setup(){
   clearRegisters();
   writeRegisters();
   
+  pinMode(pushbutton, INPUT_PULLUP);
 }               
 
 //set all register pins to LOW
@@ -94,8 +98,39 @@ void setRegisterPin(int index, int value){
   registers[index] = value;
 }
 
+int nextAnimation(int count){
+  if(count == 3)
+    return 0;
+  else{
+    count++;
+    return count;
+  }
+}
+
 void loop(){
-  
+  if (digitalRead(pushbutton) == LOW)
+  {
+    animCount = nextAnimation(animCount);
+    Serial.println(animCount);   
+    while (digitalRead(pushbutton) == LOW);
+    delay(100);
+  }
+
+  if(animCount == 0){
+    turnOffAnimations();
+  } else if(animCount == 1){
+    RainAnimation();
+  } else if(animCount == 2){
+    ScanAnimation();  
+  } else if(animCount = 3){
+    ExpandAnimation(150);
+  }
+}
+
+void turnOffAnimations(){
+  clearRegisters();
+  writeRegisters();
+  clearLayers();  
 }
 
 //Reproduz a animação de scanner, direçoes aleatórias
